@@ -1,0 +1,3 @@
+opencv
+streamlit
+Pillow
