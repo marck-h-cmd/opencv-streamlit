@@ -311,21 +311,5 @@ scaled = cv2.resize(img, None, fx={scale_x}, fy={scale_y},
     else:
         st.info("⬆️ Por favor, sube una imagen para comenzar a aplicar transformaciones")
         
-        st.markdown("---")
-        st.subheader("📖 Transformaciones disponibles:")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            - **División de canales**: Separa y visualiza canales RGB
-            - **Traslación**: Mueve la imagen en X e Y
-            - **Rotación**: Rota la imagen con escala ajustable
-            - **Escalado**: Cambia el tamaño con diferentes interpolaciones
-            """)
-        
-        with col2:
-            st.markdown("""
-            - **Transformaciones afines**: Inclinaciones y deformaciones lineales
-            - **Transformaciones proyectivas**: Cambios de perspectiva
-            - **Deformación**: Efectos especiales como ondas y remolinos
-            """)
+
+       

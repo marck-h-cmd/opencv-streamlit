@@ -174,22 +174,3 @@ def show():
     else:
         st.info("⬆️ Por favor, sube una imagen para comenzar a aplicar filtros")
         
-        st.markdown("---")
-        st.subheader("📖 Filtros disponibles:")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            - **Convolución 2D**: Aplica kernels personalizados
-            - **Desenfoque Gaussiano**: Suavizado con distribución gaussiana
-            - **Desenfoque Mediano**: Elimina ruido preservando bordes
-            - **Filtro Bilateral**: Preserva bordes mientras suaviza
-            """)
-        
-        with col2:
-            st.markdown("""
-            - **Motion Blur**: Simula movimiento de cámara
-            - **Enfoque Laplaciano**: Realza bordes y detalles
-            - **Unsharp Mask**: Enfoque profesional
-            - **High Pass Filter**: Enfatiza detalles finos
-            """)
