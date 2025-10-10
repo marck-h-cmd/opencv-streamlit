@@ -10,6 +10,7 @@ def show():
     
     uploaded_file = st.file_uploader("📤 Sube una imagen", type=['png', 'jpg', 'jpeg'], key="ch5")
     
+    img_array = None
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         img_array = np.array(image)
@@ -36,7 +37,7 @@ def show():
     
     st.markdown("---")
     
-    if st.session_state.get('image_loaded', False):
+    if st.session_state.get('image_loaded', False) and img_array is not None:
         col1, col2 = st.columns(2)
         
         with col1:
@@ -64,32 +65,6 @@ def show():
                 st.image(result_rgb, use_container_width=True)
                 st.info(f"✅ Se detectaron {len(keypoints)} características SIFT")
                 st.session_state.feature_result = result_rgb
-            
-            elif st.session_state.feature_mode == "SURF":
-                hessian_threshold = st.slider("Umbral de Hessian", 100, 2000, 400)
-                n_octaves = st.slider("Octavas", 1, 10, 4)
-                n_octave_layers = st.slider("Capas por octava", 1, 10, 3, key="surf_octave")
-                extended = st.checkbox("Descriptores extendidos", value=False)
-                upright = st.checkbox("Modo upright", value=False)
-                
-                gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
-                try:
-                    surf = cv2.xfeatures2d.SURF_create(hessianThreshold=hessian_threshold, 
-                                                     nOctaves=n_octaves, 
-                                                     nOctaveLayers=n_octave_layers,
-                                                     extended=extended, 
-                                                     upright=upright)
-                    keypoints, descriptors = surf.detectAndCompute(gray, None)
-                    
-                    result = cv2.drawKeypoints(img_array, keypoints, None, (0, 255, 0), 
-                                             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-                    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-                    st.image(result_rgb, use_container_width=True)
-                    st.info(f"✅ Se detectaron {len(keypoints)} características SURF")
-                    st.session_state.feature_result = result_rgb
-                except:
-                    st.error("SURF no está disponible en esta versión de OpenCV")
-                    st.info("Usa SIFT o FAST como alternativas")
             
             elif st.session_state.feature_mode == "FAST":
                 threshold = st.slider("Umbral", 1, 100, 10)
@@ -135,8 +110,3 @@ def show():
     
     else:
         st.info("⬆️ Por favor, sube una imagen para extraer características")
-        
-
-        
-    
-   

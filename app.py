@@ -2,7 +2,7 @@ import streamlit as st
 
 # Configuración de la página
 st.set_page_config(
-    page_title="OpenCV Learning Dashboard",
+    page_title="OpenCV 3.x with Python By Example Second Edition",
     page_icon="📷",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -13,7 +13,7 @@ if 'selected_capitulo' not in st.session_state:
     st.session_state.selected_capitulo = None
 
 # Título principal
-st.title("📷 OpenCV Computer Vision Dashboard")
+st.title("📷 OpenCV 3.x with Python By Example Second Edition")
 st.markdown("---")
 
 # Sidebar con botones de capítulos
@@ -160,68 +160,22 @@ else:
     
     st.subheader("📘 Sobre este Dashboard")
     st.write("""
-    Este dashboard interactivo contiene algoritmos y técnicas de Computer Vision 
-    usando OpenCV, organizados por capítulos temáticos.
+    ## Alumno: Hermenegildo Pacheco Marck Alessandro
     
-    Cada capítulo contiene múltiples algoritmos que puedes aplicar a tus propias imágenes.
+    ## Cada capítulo contiene múltiples algoritmos que puedes aplicar  tus propias imágenes.
     """)
     
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("Capítulos", "11")
-    with col2:
-        st.metric("Algoritmos", "75+")
-    with col3:
-        st.metric("Técnicas", "Multiple")
-    
-    st.markdown("---")
-    st.subheader("🚀 Características")
-    
-    features_col1, features_col2 = st.columns(2)
-    
-    with features_col1:
-        st.markdown("""
-        ✅ **Procesamiento en tiempo real**  
-        ✅ **Sube tus propias imágenes**  
-        ✅ **Parámetros ajustables**  
-        ✅ **Comparación lado a lado**
-        """)
-    
-    with features_col2:
-        st.markdown("""
-        ✅ **Múltiples algoritmos por capítulo**  
-        ✅ **Visualización interactiva**  
-        ✅ **Código fuente incluido**  
-        ✅ **Descarga de resultados**
-        """)
-    
-    st.markdown("---")
-    st.subheader("📂 Estructura del Proyecto")
-    st.code("""
-opencv_dashboard/
-├── app.py (archivo principal)
-├── capitulo_1.py
-├── capitulo_2.py
-├── capitulo_3.py
-├── capitulo_4.py
-├── capitulo_5.py
-├── capitulo_6.py
-├── capitulo_7.py
-├── capitulo_8.py
-├── capitulo_9.py
-├── capitulo_10.py
-└── capitulo_11.py
-    """, language="text")
-    
-    st.info("💡 **Tip:** Crea los archivos capitulo_X.py para implementar los algoritmos de cada capítulo")
+  
+ 
+
+ 
 
 # Footer
 st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center'>
-        <p>📖 OpenCV Computer Vision Dashboard | 🐍 Python + OpenCV + Streamlit</p>
+        <p> OpenCV 3.x with Python By Example Second Edition</p>
     </div>
     """,
     unsafe_allow_html=True
