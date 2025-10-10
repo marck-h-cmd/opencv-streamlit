@@ -155,14 +155,14 @@ if st.session_state.selected_capitulo is not None:
         show_pending_module(capitulo_num, cap_info['nombre'])
 
 else:
-    # Pantalla de bienvenida
+
     st.info("👈 Selecciona un capítulo del menú lateral para comenzar")
     
     st.subheader("📘 Sobre este Dashboard")
     st.write("""
     ## Alumno: Hermenegildo Pacheco Marck Alessandro
     
-    ## Cada capítulo contiene múltiples algoritmos que puedes aplicar  tus propias imágenes.
+    ## Cada capítulo contiene algoritmos para aplicar  a imágenes.
     """)
     
   

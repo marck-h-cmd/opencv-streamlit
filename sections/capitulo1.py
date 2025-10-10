@@ -2,6 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 from PIL import Image
+import io
 
 def show():
     st.header("🔄 Capítulo 1: Transformaciones Geométricas")
@@ -9,6 +10,7 @@ def show():
     
     uploaded_file = st.file_uploader("📤 Sube una imagen", type=['png', 'jpg', 'jpeg'], key="ch1")
     
+    img_array = None
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         img_array = np.array(image)
@@ -16,32 +18,53 @@ def show():
         if len(img_array.shape) == 3:
             img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
         
-        st.subheader("⚙️ Selecciona una transformación")
-        transformation = st.selectbox(
-            "Tipo de transformación:",
-            [
-                "División y combinación de canales",
-                "Traslación de imágenes",
-                "Rotación de imágenes",
-                "Escalado de imágenes",
-                "Transformaciones afines",
-                "Transformaciones proyectivas",
-                "Deformación de imágenes"
-            ]
-        )
-        
-        st.markdown("---")
-        
+        st.session_state.image_loaded = True
+    else:
+        st.session_state.image_loaded = False
+    
+    st.subheader("⚙️ Selecciona una transformación")
+    
+    col_buttons = st.columns(4)
+    with col_buttons[0]:
+        if st.button("Canales", use_container_width=True):
+            st.session_state.transformation = "División y combinación de canales"
+    with col_buttons[1]:
+        if st.button("Traslación", use_container_width=True):
+            st.session_state.transformation = "Traslación de imágenes"
+    with col_buttons[2]:
+        if st.button("Rotación", use_container_width=True):
+            st.session_state.transformation = "Rotación de imágenes"
+    with col_buttons[3]:
+        if st.button("Escalado", use_container_width=True):
+            st.session_state.transformation = "Escalado de imágenes"
+    
+    col_buttons2 = st.columns(3)
+    with col_buttons2[0]:
+        if st.button("Afines", use_container_width=True):
+            st.session_state.transformation = "Transformaciones afines"
+    with col_buttons2[1]:
+        if st.button("Proyectivas", use_container_width=True):
+            st.session_state.transformation = "Transformaciones proyectivas"
+    with col_buttons2[2]:
+        if st.button("Deformación", use_container_width=True):
+            st.session_state.transformation = "Deformación de imágenes"
+    
+    if 'transformation' not in st.session_state:
+        st.session_state.transformation = "División y combinación de canales"
+    
+    st.markdown("---")
+    
+    if st.session_state.get('image_loaded', False) and img_array is not None:
         col1, col2 = st.columns(2)
         
         with col1:
             st.write("**📷 Imagen Original**")
-            st.image(image, use_container_width=True)
+            st.image(cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB), use_container_width=True)
         
         with col2:
-            st.write("**✨ Resultado**")
+            st.write(f"**✨ {st.session_state.transformation}**")
             
-            if transformation == "División y combinación de canales":
+            if st.session_state.transformation == "División y combinación de canales":
                 if len(img_array.shape) == 3:
                     b, g, r = cv2.split(img_array)
                     
@@ -49,36 +72,32 @@ def show():
                                                ["Imagen Original", "Solo Canal Rojo", "Solo Canal Verde", "Solo Canal Azul"])
                     
                     if canal_option == "Imagen Original":
-                        st.image(image, use_container_width=True)
+                        result_rgb = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
+                        st.image(result_rgb, use_container_width=True)
                     elif canal_option == "Solo Canal Rojo":
                         zeros = np.zeros_like(r)
                         result = cv2.merge([zeros, zeros, r])
-                        st.image(cv2.cvtColor(result, cv2.COLOR_BGR2RGB), use_container_width=True)
+                        result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                        st.image(result_rgb, use_container_width=True)
                     elif canal_option == "Solo Canal Verde":
                         zeros = np.zeros_like(g)
                         result = cv2.merge([zeros, g, zeros])
-                        st.image(cv2.cvtColor(result, cv2.COLOR_BGR2RGB), use_container_width=True)
+                        result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                        st.image(result_rgb, use_container_width=True)
                     elif canal_option == "Solo Canal Azul":
                         zeros = np.zeros_like(b)
                         result = cv2.merge([b, zeros, zeros])
-                        st.image(cv2.cvtColor(result, cv2.COLOR_BGR2RGB), use_container_width=True)
+                        result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                        st.image(result_rgb, use_container_width=True)
                     
-                    st.write("**Canales separados:**")
-                    col_r, col_g, col_b = st.columns(3)
-                    with col_r:
-                        st.caption("Canal Rojo")
-                        st.image(r, use_container_width=True, clamp=True)
-                    with col_g:
-                        st.caption("Canal Verde")
-                        st.image(g, use_container_width=True, clamp=True)
-                    with col_b:
-                        st.caption("Canal Azul")
-                        st.image(b, use_container_width=True, clamp=True)
+                    st.session_state.transform_result = result_rgb
                 else:
                     st.info("La imagen es en escala de grises (1 canal)")
-                    st.image(image, use_container_width=True)
+                    result_rgb = img_array
+                    st.image(result_rgb, use_container_width=True)
+                    st.session_state.transform_result = result_rgb
             
-            elif transformation == "Traslación de imágenes":
+            elif st.session_state.transformation == "Traslación de imágenes":
                 tx = st.slider("Desplazamiento X (píxeles)", -200, 200, 50, key="tx")
                 ty = st.slider("Desplazamiento Y (píxeles)", -200, 200, 30, key="ty")
                 
@@ -88,17 +107,9 @@ def show():
                 
                 result_rgb = cv2.cvtColor(translated, cv2.COLOR_BGR2RGB) if len(translated.shape) == 3 else translated
                 st.image(result_rgb, use_container_width=True)
-                
-                with st.expander("💻 Ver código"):
-                    st.code(f"""
-import cv2
-import numpy as np
-
-M = np.float32([[1, 0, {tx}], [0, 1, {ty}]])
-translated = cv2.warpAffine(img, M, (cols, rows))
-                    """, language="python")
+                st.session_state.transform_result = result_rgb
             
-            elif transformation == "Rotación de imágenes":
+            elif st.session_state.transformation == "Rotación de imágenes":
                 angle = st.slider("Ángulo de rotación (grados)", -180, 180, 45, key="angle")
                 scale = st.slider("Escala", 0.1, 2.0, 1.0, 0.1, key="rot_scale")
                 
@@ -109,17 +120,9 @@ translated = cv2.warpAffine(img, M, (cols, rows))
                 
                 result_rgb = cv2.cvtColor(rotated, cv2.COLOR_BGR2RGB) if len(rotated.shape) == 3 else rotated
                 st.image(result_rgb, use_container_width=True)
-                
-                with st.expander("💻 Ver código"):
-                    st.code(f"""
-import cv2
-
-center = (cols // 2, rows // 2)
-M = cv2.getRotationMatrix2D(center, {angle}, {scale})
-rotated = cv2.warpAffine(img, M, (cols, rows))
-                    """, language="python")
+                st.session_state.transform_result = result_rgb
             
-            elif transformation == "Escalado de imágenes":
+            elif st.session_state.transformation == "Escalado de imágenes":
                 scale_x = st.slider("Escala X", 0.1, 3.0, 1.5, 0.1, key="scale_x")
                 scale_y = st.slider("Escala Y", 0.1, 3.0, 1.5, 0.1, key="scale_y")
                 
@@ -140,16 +143,9 @@ rotated = cv2.warpAffine(img, M, (cols, rows))
                 
                 result_rgb = cv2.cvtColor(scaled, cv2.COLOR_BGR2RGB) if len(scaled.shape) == 3 else scaled
                 st.image(result_rgb, use_container_width=True)
-                
-                with st.expander("💻 Ver código"):
-                    st.code(f"""
-import cv2
-
-scaled = cv2.resize(img, None, fx={scale_x}, fy={scale_y}, 
-                   interpolation=cv2.{interpolation_method})
-                    """, language="python")
+                st.session_state.transform_result = result_rgb
             
-            elif transformation == "Transformaciones afines":
+            elif st.session_state.transformation == "Transformaciones afines":
                 rows, cols = img_array.shape[:2]
                 
                 transform_type = st.radio(
@@ -181,10 +177,9 @@ scaled = cv2.resize(img, None, fx={scale_x}, fy={scale_y},
                 
                 result_rgb = cv2.cvtColor(affine, cv2.COLOR_BGR2RGB) if len(affine.shape) == 3 else affine
                 st.image(result_rgb, use_container_width=True)
-                
-                st.info("💡 Las transformaciones afines preservan líneas paralelas")
+                st.session_state.transform_result = result_rgb
             
-            elif transformation == "Transformaciones proyectivas":
+            elif st.session_state.transformation == "Transformaciones proyectivas":
                 rows, cols = img_array.shape[:2]
                 
                 preset = st.selectbox(
@@ -223,10 +218,9 @@ scaled = cv2.resize(img, None, fx={scale_x}, fy={scale_y},
                 
                 result_rgb = cv2.cvtColor(perspective, cv2.COLOR_BGR2RGB) if len(perspective.shape) == 3 else perspective
                 st.image(result_rgb, use_container_width=True)
-                
-                st.info("💡 Las transformaciones proyectivas cambian la perspectiva de la imagen")
+                st.session_state.transform_result = result_rgb
             
-            elif transformation == "Deformación de imágenes":
+            elif st.session_state.transformation == "Deformación de imágenes":
                 rows, cols = img_array.shape[:2]
                 
                 deform_type = st.selectbox(
@@ -301,15 +295,25 @@ scaled = cv2.resize(img, None, fx={scale_x}, fy={scale_y},
                 
                 result_rgb = cv2.cvtColor(warped, cv2.COLOR_BGR2RGB) if len(warped.shape) == 3 else warped
                 st.image(result_rgb, use_container_width=True)
-                
-                st.info("💡 La deformación usa remapeo de píxeles para crear efectos especiales")
+                st.session_state.transform_result = result_rgb
         
         st.markdown("---")
-        if st.button("💾 Descargar resultado", use_container_width=True):
-            st.info("Funcionalidad de descarga disponible próximamente")
+        
+        if st.button("💾 Descargar resultado", key="download_ch1"):
+            if 'transform_result' in st.session_state:
+                pil_image = Image.fromarray(st.session_state.transform_result)
+                
+                buf = io.BytesIO()
+                pil_image.save(buf, format="PNG")
+                byte_im = buf.getvalue()
+                
+                st.download_button(
+                    label="⬇️ Descargar imagen transformada",
+                    data=byte_im,
+                    file_name=f"transformacion_{st.session_state.transformation.replace(' ', '_')}.png",
+                    mime="image/png",
+                    use_container_width=True
+                )
     
     else:
         st.info("⬆️ Por favor, sube una imagen para comenzar a aplicar transformaciones")
-        
-
-       
