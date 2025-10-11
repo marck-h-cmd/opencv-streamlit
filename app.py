@@ -163,6 +163,8 @@ else:
     ## Alumno: Hermenegildo Pacheco Marck Alessandro
     
     ## Cada capítulo contiene algoritmos para aplicar  a imágenes.
+    
+    ### Nota: Es posible que algunos capítulos no permita el accesso a la cámara web debido a que esta en entorno de Streamlit Cloud.
     """)
     
   
