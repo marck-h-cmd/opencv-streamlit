@@ -3,8 +3,12 @@ import cv2
 import numpy as np
 from PIL import Image
 import io
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration
 import av
+
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
 
 class BodyPartsDetector(VideoProcessorBase):
     def __init__(self):
@@ -116,6 +120,8 @@ def show():
             key="face-detection",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=BodyPartsDetector,
+            rtc_configuration=RTC_CONFIGURATION,
+            media_stream_constraints={"video": True, "audio": False},
             async_processing=True,
         )
         
@@ -134,6 +140,8 @@ def show():
             key="eye-detection",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=BodyPartsDetector,
+            rtc_configuration=RTC_CONFIGURATION,
+            media_stream_constraints={"video": True, "audio": False},
             async_processing=True,
         )
         
@@ -152,6 +160,8 @@ def show():
             key="mouth-detection",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=BodyPartsDetector,
+            rtc_configuration=RTC_CONFIGURATION,
+            media_stream_constraints={"video": True, "audio": False},
             async_processing=True,
         )
         
@@ -172,6 +182,8 @@ def show():
             key="pupil-detection",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=BodyPartsDetector,
+            rtc_configuration=RTC_CONFIGURATION,
+            media_stream_constraints={"video": True, "audio": False},
             async_processing=True,
         )
         
