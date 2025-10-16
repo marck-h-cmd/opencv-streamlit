@@ -1,6 +1,6 @@
 import streamlit as st
 
-# Configuración de la página
+
 st.set_page_config(
     page_title="OpenCV 3.x with Python By Example Second Edition",
     page_icon="📷",
@@ -8,32 +8,29 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inicializar session state
+
 if 'selected_capitulo' not in st.session_state:
     st.session_state.selected_capitulo = None
 
-# Título principal
 st.title("📷 OpenCV 3.x with Python By Example Second Edition")
 st.markdown("---")
 
-# Sidebar con botones de capítulos
 st.sidebar.title("📚 Capítulos")
 st.sidebar.markdown("Selecciona un capítulo")
 st.sidebar.markdown("---")
 
-# Definir capítulos
 capitulos = [
-    {"num": 1, "nombre": "Geometric Transformations", "icon": "🔄"},
-    {"num": 2, "nombre": "Edges and Filters", "icon": "🔍"},
-    {"num": 3, "nombre": "Cartoonizing Images", "icon": "🎨"},
-    {"num": 4, "nombre": "Body Parts Detection", "icon": "👤"},
-    {"num": 5, "nombre": "Feature Extraction", "icon": "🎯"},
-    {"num": 6, "nombre": "Seam Carving", "icon": "✂️"},
-    {"num": 7, "nombre": "Shapes and Segmentation", "icon": "🔶"},
-    {"num": 8, "nombre": "Object Tracking", "icon": "🎯"},
-    {"num": 9, "nombre": "Object Recognition", "icon": "🤖"},
-    {"num": 10, "nombre": "Augmented Reality", "icon": "🌐"},
-    {"num": 11, "nombre": "Neural Networks", "icon": "🧠"}
+    {"num": 1, "nombre": "Geometric Transformations", "icon": "*"},
+    {"num": 2, "nombre": "Edges and Filters", "icon": "*"},
+    {"num": 3, "nombre": "Cartoonizing Images", "icon": "*"},
+    {"num": 4, "nombre": "Body Parts Detection", "icon": "*"},
+    {"num": 5, "nombre": "Feature Extraction", "icon": "*"},
+    {"num": 6, "nombre": "Seam Carving", "icon": "*"},
+    {"num": 7, "nombre": "Shapes and Segmentation", "icon": "*"},
+    {"num": 8, "nombre": "Object Tracking", "icon": "*"},
+    {"num": 9, "nombre": "Object Recognition", "icon": "*"},
+    {"num": 10, "nombre": "Augmented Reality", "icon": "*"},
+    {"num": 11, "nombre": "Neural Networks", "icon": "*"}
 ]
 
 # Crear botones para cada capítulo en el sidebar
