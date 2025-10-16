@@ -27,62 +27,65 @@ class BodyPartsDetector(VideoProcessorBase):
         self.mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
 
     def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        
-        if self.detection_mode == "Detección de rostros":
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=self.scale_factor, 
-                                                     minNeighbors=self.min_neighbors, 
-                                                     minSize=(self.min_size, self.min_size))
-            for (x, y, w, h) in faces:
-                cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.putText(img, 'Rostro', (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        
-        elif self.detection_mode == "Detección de ojos":
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=1)
-            for (x, y, w, h) in faces:
-                roi_gray = gray[y:y+h, x:x+w]
-                roi_color = img[y:y+h, x:x+w]
-                eyes = self.eye_cascade.detectMultiScale(roi_gray, scaleFactor=self.scale_factor, 
-                                                       minNeighbors=self.min_neighbors, 
-                                                       minSize=(self.min_size, self.min_size))
-                for (x_eye, y_eye, w_eye, h_eye) in eyes:
-                    center = (int(x_eye + 0.5*w_eye), int(y_eye + 0.5*h_eye))
-                    radius = int(0.3 * (w_eye + h_eye))
-                    cv2.circle(roi_color, center, radius, (0, 255, 0), 2)
-                    cv2.putText(roi_color, 'Ojo', (x_eye, y_eye-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-        
-        elif self.detection_mode == "Detección de boca":
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=1)
-            for (x, y, w, h) in faces:
-                roi_gray = gray[y:y+h, x:x+w]
-                roi_color = img[y:y+h, x:x+w]
-                mouths = self.mouth_cascade.detectMultiScale(roi_gray, scaleFactor=self.scale_factor, 
+        try:
+            img = frame.to_ndarray(format="bgr24")
+            
+            if self.detection_mode == "Detección de rostros":
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                faces = self.face_cascade.detectMultiScale(gray, scaleFactor=self.scale_factor, 
+                                                         minNeighbors=self.min_neighbors, 
+                                                         minSize=(self.min_size, self.min_size))
+                for (x, y, w, h) in faces:
+                    cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                    cv2.putText(img, 'Rostro', (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            
+            elif self.detection_mode == "Detección de ojos":
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=1)
+                for (x, y, w, h) in faces:
+                    roi_gray = gray[y:y+h, x:x+w]
+                    roi_color = img[y:y+h, x:x+w]
+                    eyes = self.eye_cascade.detectMultiScale(roi_gray, scaleFactor=self.scale_factor, 
                                                            minNeighbors=self.min_neighbors, 
                                                            minSize=(self.min_size, self.min_size))
-                for (x_mouth, y_mouth, w_mouth, h_mouth) in mouths:
-                    cv2.rectangle(roi_color, (x_mouth, y_mouth), (x_mouth+w_mouth, y_mouth+h_mouth), (0, 0, 255), 2)
-                    cv2.putText(roi_color, 'Boca', (x_mouth, y_mouth-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-        
-        elif self.detection_mode == "Detección de pupilas":
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            eyes = self.eye_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
-            for (x, y, w, h) in eyes:
-                roi_gray = gray[y:y+h, x:x+w]
-                blurred = cv2.medianBlur(roi_gray, self.blur_value)
-                circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, 1, 20,
-                                         param1=self.param1, param2=self.param2,
-                                         minRadius=self.min_radius, maxRadius=self.max_radius)
-                if circles is not None:
-                    circles = np.round(circles[0, :]).astype("int")
-                    for (cx, cy, r) in circles:
-                        cv2.circle(img, (x+cx, y+cy), r, (0, 255, 255), 2)
-                        cv2.circle(img, (x+cx, y+cy), 2, (0, 255, 255), 3)
-                        cv2.putText(img, 'Pupila', (x+cx-20, y+cy-r-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
-        
-        return av.VideoFrame.from_ndarray(img, format="bgr24")
+                    for (x_eye, y_eye, w_eye, h_eye) in eyes:
+                        center = (int(x_eye + 0.5*w_eye), int(y_eye + 0.5*h_eye))
+                        radius = int(0.3 * (w_eye + h_eye))
+                        cv2.circle(roi_color, center, radius, (0, 255, 0), 2)
+                        cv2.putText(roi_color, 'Ojo', (x_eye, y_eye-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            
+            elif self.detection_mode == "Detección de boca":
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=1)
+                for (x, y, w, h) in faces:
+                    roi_gray = gray[y:y+h, x:x+w]
+                    roi_color = img[y:y+h, x:x+w]
+                    mouths = self.mouth_cascade.detectMultiScale(roi_gray, scaleFactor=self.scale_factor, 
+                                                               minNeighbors=self.min_neighbors, 
+                                                               minSize=(self.min_size, self.min_size))
+                    for (x_mouth, y_mouth, w_mouth, h_mouth) in mouths:
+                        cv2.rectangle(roi_color, (x_mouth, y_mouth), (x_mouth+w_mouth, y_mouth+h_mouth), (0, 0, 255), 2)
+                        cv2.putText(roi_color, 'Boca', (x_mouth, y_mouth-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+            
+            elif self.detection_mode == "Detección de pupilas":
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                eyes = self.eye_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+                for (x, y, w, h) in eyes:
+                    roi_gray = gray[y:y+h, x:x+w]
+                    blurred = cv2.medianBlur(roi_gray, self.blur_value)
+                    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, 1, 20,
+                                             param1=self.param1, param2=self.param2,
+                                             minRadius=self.min_radius, maxRadius=self.max_radius)
+                    if circles is not None:
+                        circles = np.round(circles[0, :]).astype("int")
+                        for (cx, cy, r) in circles:
+                            cv2.circle(img, (x+cx, y+cy), r, (0, 255, 255), 2)
+                            cv2.circle(img, (x+cx, y+cy), 2, (0, 255, 255), 3)
+                            cv2.putText(img, 'Pupila', (x+cx-20, y+cy-r-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+            
+            return av.VideoFrame.from_ndarray(img, format="bgr24")
+        except Exception:
+            return frame
 
 def show():
     st.header("👤 Capítulo 4: Body Parts Detection")
@@ -122,7 +125,7 @@ def show():
             video_processor_factory=BodyPartsDetector,
             rtc_configuration=RTC_CONFIGURATION,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True,
+            async_processing=False,
         )
         
         if ctx.video_processor:
@@ -142,7 +145,7 @@ def show():
             video_processor_factory=BodyPartsDetector,
             rtc_configuration=RTC_CONFIGURATION,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True,
+            async_processing=False,
         )
         
         if ctx.video_processor:
@@ -162,7 +165,7 @@ def show():
             video_processor_factory=BodyPartsDetector,
             rtc_configuration=RTC_CONFIGURATION,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True,
+            async_processing=False,
         )
         
         if ctx.video_processor:
@@ -184,7 +187,7 @@ def show():
             video_processor_factory=BodyPartsDetector,
             rtc_configuration=RTC_CONFIGURATION,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True,
+            async_processing=False,
         )
         
         if ctx.video_processor:
