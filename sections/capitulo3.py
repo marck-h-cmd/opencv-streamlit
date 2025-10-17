@@ -4,6 +4,40 @@ import numpy as np
 from PIL import Image
 import io
 import tempfile
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode, RTCConfiguration
+import av
+
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
+
+class CartoonVideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.drawing = False
+        self.x_init, self.y_init = -1, -1
+        self.event_params = {"top_left_pt": (-1, -1), "bottom_right_pt": (-1, -1)}
+        self.cartoon_mode = "Webcam y Video"
+
+    def update_pts(self, x, y):
+        self.event_params["top_left_pt"] = (min(self.x_init, x), min(self.y_init, y))
+        self.event_params["bottom_right_pt"] = (max(self.x_init, x), max(self.y_init, y))
+
+    def recv(self, frame):
+        try:
+            img = frame.to_ndarray(format="bgr24")
+            
+            if self.cartoon_mode == "Webcam y Video":
+                img_resized = cv2.resize(img, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_AREA)
+                
+                (x0,y0), (x1,y1) = self.event_params["top_left_pt"], self.event_params["bottom_right_pt"]
+                if x0 != -1 and y0 != -1 and x1 != -1 and y1 != -1:
+                    img_resized[y0:y1, x0:x1] = 255 - img_resized[y0:y1, x0:x1]
+                
+                return av.VideoFrame.from_ndarray(img_resized, format="bgr24")
+            else:
+                return frame
+        except Exception:
+            return frame
 
 def show():
     st.header("🎨 Capítulo 3: Cartoonizing Images")
@@ -11,6 +45,7 @@ def show():
     
     uploaded_file = st.file_uploader("📤 Sube una imagen o video", type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov'], key="ch3")
     
+    img_array = None
     if uploaded_file is not None:
         file_type = uploaded_file.type
         if 'image' in file_type:
@@ -50,50 +85,17 @@ def show():
         option = st.radio("Selecciona fuente:", ["Cámara Web", "Archivo de Video"])
         
         if option == "Cámara Web":
-            if st.button("Iniciar Webcam Interactiva", key="start_interactive_webcam"):
-                st.session_state.interactive_webcam = True
+            ctx = webrtc_streamer(
+                key="cartoon-webcam",
+                mode=WebRtcMode.SENDRECV,
+                video_processor_factory=CartoonVideoProcessor,
+                rtc_configuration=RTC_CONFIGURATION,
+                media_stream_constraints={"video": True, "audio": False},
+                async_processing=False,
+            )
             
-            if st.button("Detener Webcam", key="stop_interactive_webcam"):
-                st.session_state.interactive_webcam = False
-            
-            if st.session_state.get('interactive_webcam', False):
-                st.info("🖱️ Haz clic y arrastra para dibujar rectángulos invertidos en la webcam")
-                
-                cap = cv2.VideoCapture(0)
-                
-                if cap.isOpened():
-                    stframe = st.empty()
-                    stop_button = st.button("🛑 Detener Webcam")
-                    
-                    drawing = False
-                    x_init, y_init = -1, -1
-                    event_params = {"top_left_pt": (-1, -1), "bottom_right_pt": (-1, -1)}
-                    
-                    def update_pts(params, x, y):
-                        global x_init, y_init
-                        params["top_left_pt"] = (min(x_init, x), min(y_init, y))
-                        params["bottom_right_pt"] = (max(x_init, x), max(y_init, y))
-                    
-                    while cap.isOpened() and not stop_button:
-                        ret, frame = cap.read()
-                        if not ret:
-                            break
-                        
-                        img = cv2.resize(frame, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_AREA)
-                        
-                        (x0,y0), (x1,y1) = event_params["top_left_pt"], event_params["bottom_right_pt"]
-                        if x0 != -1 and y0 != -1 and x1 != -1 and y1 != -1:
-                            img[y0:y1, x0:x1] = 255 - img[y0:y1, x0:x1]
-                        
-                        frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                        stframe.image(frame_rgb, channels="RGB", use_container_width=True)
-                        
-                        if stop_button:
-                            break
-                    
-                    cap.release()
-                else:
-                    st.error("No se pudo acceder a la cámara web")
+            if ctx.video_processor:
+                ctx.video_processor.cartoon_mode = st.session_state.cartoon_mode
         
         else:
             if st.session_state.get('video_loaded', False):
@@ -130,14 +132,11 @@ def show():
                         st.error("No se pudo abrir el video")
             else:
                 st.info("⬆️ Por favor, sube un video para procesar")
-        
-       
-    
     
     elif st.session_state.cartoon_mode == "Efecto cartoon":
         st.info("🎨 Efecto Cartoon en Imagen")
         
-        if st.session_state.get('image_loaded', False):
+        if st.session_state.get('image_loaded', False) and img_array is not None:
             col1, col2 = st.columns(2)
             
             with col1:
@@ -214,10 +213,9 @@ def show():
     if st.button("💾 Descargar resultado", key="download_ch3"):
         result_for_download = None
         
-        
         if st.session_state.cartoon_mode == "Efecto cartoon" and 'cartoon_result' in st.session_state:
             result_for_download = st.session_state.cartoon_result
-        elif st.session_state.get('image_loaded', False):
+        elif st.session_state.get('image_loaded', False) and img_array is not None:
             result_for_download = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
         
         if result_for_download is not None:
@@ -236,9 +234,3 @@ def show():
             )
         else:
             st.warning("No hay resultado para descargar")
-    
-    else:
-        st.info("⬆️ Por favor, sube una imagen o video para comenzar")
-        
-  
-       
